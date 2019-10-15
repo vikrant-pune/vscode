@@ -1,6 +1,9 @@
 pool:
   vmImage: 'Ubuntu-16.04'
 
+variables:
+  VSCODE_EXPLORATION_BRANCH: electron-7.x
+
 trigger: none
 pr: none
 
@@ -27,10 +30,14 @@ steps:
     git config user.email "vscode@microsoft.com"
     git config user.name "VSCode"
 
-    git checkout origin/electron-6.0.x
+    git checkout origin/$VSCODE_EXPLORATION_BRANCH
     git merge origin/master
 
     # Push master branch into exploration branch
-    git push origin HEAD:electron-6.0.x
+    git push origin HEAD:$VSCODE_EXPLORATION_BRANCH
+
+    # Merge exploration branch into build branch
+    git checkout origin/electron-build-next
+    git merge origin/$VSCODE_EXPLORATION_BRANCH
 
   displayName: Sync & Merge Exploration
