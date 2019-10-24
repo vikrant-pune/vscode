@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ITelemetryData } from 'vs/platform/telemetry/common/telemetry';
 import { IProcessEnvironment, isMacintosh, isLinux, isWeb } from 'vs/base/common/platform';
 import { ParsedArgs, IEnvironmentService } from 'vs/platform/environment/common/environment';
 import { IWorkspaceIdentifier, ISingleFolderWorkspaceIdentifier } from 'vs/platform/workspaces/common/workspaces';
@@ -11,15 +10,6 @@ import { ExportData } from 'vs/base/common/performance';
 import { LogLevel } from 'vs/platform/log/common/log';
 import { URI, UriComponents } from 'vs/base/common/uri';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-
-export interface INativeOpenDialogOptions {
-	forceNewWindow?: boolean;
-
-	defaultPath?: string;
-
-	telemetryEventName?: string;
-	telemetryExtraData?: ITelemetryData;
-}
 
 export interface IOpenedWindow {
 	id: number;
@@ -29,18 +19,17 @@ export interface IOpenedWindow {
 	filename?: string;
 }
 
-export interface IOpenInWindowOptions {
-	forceNewWindow?: boolean;
+export interface IBaseOpenWindowsOptions {
 	forceReuseWindow?: boolean;
-	diffMode?: boolean;
-	addMode?: boolean;
-	gotoLineMode?: boolean;
-	noRecentEntry?: boolean;
-	waitMarkerFileURI?: URI;
 }
 
-export interface IOpenEmptyWindowOptions {
-	reuse?: boolean;
+export interface IOpenWindowOptions extends IBaseOpenWindowsOptions {
+	forceNewWindow?: boolean;
+
+	noRecentEntry?: boolean;
+}
+
+export interface IOpenEmptyWindowOptions extends IBaseOpenWindowsOptions {
 	remoteAuthority?: string;
 }
 
@@ -75,6 +64,17 @@ export function isFileToOpen(uriToOpen: IWindowOpenable): uriToOpen is IFileToOp
 }
 
 export type MenuBarVisibility = 'default' | 'visible' | 'toggle' | 'hidden' | 'compact';
+
+export function getMenuBarVisibility(configurationService: IConfigurationService, environment: IEnvironmentService, isExtensionDevelopment = environment.isExtensionDevelopment): MenuBarVisibility {
+	const titleBarStyle = getTitleBarStyle(configurationService, environment, isExtensionDevelopment);
+	const menuBarVisibility = configurationService.getValue<MenuBarVisibility>('window.menuBarVisibility');
+
+	if (titleBarStyle === 'native' && menuBarVisibility === 'compact') {
+		return 'default';
+	} else {
+		return menuBarVisibility;
+	}
+}
 
 export interface IWindowsConfiguration {
 	window: IWindowSettings;
@@ -220,7 +220,8 @@ export interface IAddFoldersRequest {
 
 export interface IWindowConfiguration extends ParsedArgs {
 	machineId: string;
-	windowId: number;
+	windowId: number; // TODO: should we deprecate this in favor of sessionId?
+	sessionId: string;
 	logLevel: LogLevel;
 
 	mainPid: number;
@@ -245,19 +246,14 @@ export interface IWindowConfiguration extends ParsedArgs {
 	fullscreen?: boolean;
 	maximized?: boolean;
 	highContrast?: boolean;
-	frameless?: boolean;
 	accessibilitySupport?: boolean;
 	partsSplashPath?: string;
 
-	perfStartTime?: number;
-	perfAppReady?: number;
-	perfWindowLoadTime?: number;
 	perfEntries: ExportData;
 
 	filesToOpenOrCreate?: IPath[];
 	filesToDiff?: IPath[];
 	filesToWait?: IPathsToWaitFor;
-	termProgram?: string;
 }
 
 export interface IRunActionInWindowRequest {

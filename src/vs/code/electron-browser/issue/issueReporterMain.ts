@@ -16,6 +16,7 @@ import { debounce } from 'vs/base/common/decorators';
 import * as platform from 'vs/base/common/platform';
 import { Disposable } from 'vs/base/common/lifecycle';
 import { getDelayedChannel } from 'vs/base/parts/ipc/common/ipc';
+import { createChannelSender } from 'vs/base/parts/ipc/node/ipc';
 import { connect as connectNet } from 'vs/base/parts/ipc/node/ipc.net';
 import { ServiceCollection } from 'vs/platform/instantiation/common/serviceCollection';
 import { IWindowConfiguration } from 'vs/platform/windows/common/windows';
@@ -33,14 +34,12 @@ import { IssueReporterData, IssueReporterStyles, IssueType, ISettingsSearchIssue
 import BaseHtml from 'vs/code/electron-browser/issue/issueReporterPage';
 import { LoggerChannelClient, FollowerLogService } from 'vs/platform/log/common/logIpc';
 import { ILogService, getLogLevel } from 'vs/platform/log/common/log';
-import { OcticonLabel } from 'vs/base/browser/ui/octiconLabel/octiconLabel';
+import { CodiconLabel } from 'vs/base/browser/ui/codiconLabel/codiconLabel';
 import { normalizeGitHubUrl } from 'vs/code/electron-browser/issue/issueReporterUtil';
 import { Button } from 'vs/base/browser/ui/button/button';
-import { withUndefinedAsNull } from 'vs/base/common/types';
 import { SystemInfo, isRemoteDiagnosticError } from 'vs/platform/diagnostics/common/diagnostics';
 import { SpdLogService } from 'vs/platform/log/node/spdlogService';
 import { ISharedProcessService } from 'vs/platform/ipc/electron-browser/sharedProcessService';
-import { createChannelSender } from 'vs/platform/ipc/node/ipcChannelCreator';
 
 const MAX_URL_LENGTH = 2045;
 
@@ -232,7 +231,7 @@ export class IssueReporter extends Disposable {
 
 		styleTag.innerHTML = content.join('\n');
 		document.head.appendChild(styleTag);
-		document.body.style.color = withUndefinedAsNull(styles.color);
+		document.body.style.color = styles.color || '';
 	}
 
 	private handleExtensionData(extensions: IssueReporterExtensionData[]) {
@@ -648,8 +647,8 @@ export class IssueReporter extends Disposable {
 					issueState = $('span.issue-state');
 
 					const issueIcon = $('span.issue-icon');
-					const octicon = new OcticonLabel(issueIcon);
-					octicon.text = issue.state === 'open' ? '$(issue-opened)' : '$(issue-closed)';
+					const codicon = new CodiconLabel(issueIcon);
+					codicon.text = issue.state === 'open' ? '$(issue-opened)' : '$(issue-closed)';
 
 					const issueStateLabel = $('span.issue-state.label');
 					issueStateLabel.textContent = issue.state === 'open' ? localize('open', "Open") : localize('closed', "Closed");
