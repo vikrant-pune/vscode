@@ -90,7 +90,7 @@
 
 .monaco-workbench .part.statusbar > .items-container > .statusbar-item > a {
 	cursor: pointer;
-	display: flexbox;
+	display: flex;
 	align-items: center;
 	height: 100%;
 	padding: 0 5px 0 5px;
