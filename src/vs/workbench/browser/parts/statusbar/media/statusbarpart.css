@@ -90,7 +90,8 @@
 
 .monaco-workbench .part.statusbar > .items-container > .statusbar-item > a {
 	cursor: pointer;
-	display: inline-block;
+	display: flexbox;
+	align-items: center;
 	height: 100%;
 	padding: 0 5px 0 5px;
 	white-space: pre; /* gives some degree of styling */
